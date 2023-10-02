@@ -1,38 +1,99 @@
-const express = require('express')
+import express, { Request, Response } from "express";
+
+import * as fsService from './fs.service';
 
 const app = express();
 
-const PORT = 5100;
-
 app.use(express.json());
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({extended: true}));
 
-const users = [
-    {
-        id:1,
-        name: "Koks",
-        age:45
-    },
-    {
-        id: 2,
-        name: "Mew",
-        age:16
+app.get('/users', async (req:Request, res:Response) => {
+    const users = await fsService.reader();
+    res.json(users);
+});
+
+app.post('/users', async (req:Request, res:Response) => {
+    try {
+        const {name, email} = req.body;
+        const users = await fsService.reader();
+
+        const lastId = users[users.length - 1].id;
+        const newUser = {name, email, id: lastId + 1}
+        users.push(newUser);
+        await fsService.writer(users);
+        res.status(201).json(newUser);
+    } catch (e:any) {
+        res.status(400).json(e.message);
     }
-];
+});
 
-app.get('/', (req: Request, res: Response)=>{
-    res.json(users)
+app.get('/users/:id', async (req:Request, res:Response) => {
+    try {
+        const {id} = req.params;
+        const users = await fsService.reader();
+        const user = users.find((user) => user.id === Number(id));
+        if (!user) {
+            throw new Error('User not found');
+        }
+        res.json(user);
+    } catch (e:any) {
+        res.status(404).json(e.message);
+    }
 })
 
-app.post('/add', (req: Request, res: Response)=>{
-    const user = req.body;
-    users.push(user)
+app.delete('/users/:id', async (req:Request, res:Response) => {
+    try {
+        const {id} = req.params;
 
-    res.status(201).json({messege:"user was created"})
+        const users = await fsService.reader();
+        const index = users.findIndex((user) => user.id === Number(id));
+        if (index === -1) {
+            throw new Error('User not found');
+        }
+        users.splice(index, 1);
+
+        await fsService.writer(users);
+
+        res.sendStatus(204);
+    } catch (e:any) {
+        res.status(404).json(e.message);
+    }
+});
+
+app.put('/users/:id', async (req:Request, res:Response) => {
+    try {
+        const {id} = req.params;
+        const {name, email} = req.body;
+
+        if (!name || name.length < 2) {
+            throw new Error('Wrong name');
+        }
+        if (!email || !email.includes('@')) {
+            throw new Error('Wrong email');
+        }
+
+        const users = await fsService.reader();
+        const user = users.find((user) => user.id === Number(id));
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        user.email = email;
+        user.name = name;
+
+        await fsService.writer(users);
+
+        res.status(201).json(user);
+    } catch (e:any) {
+        res.status(404).json(e.message);
+    }
+});
+
+const PORT = 5001;
+
+app.listen(PORT, () => {
+    console.log(`Server has successfully started on PORT ${PORT}`);
 })
 
-app.listen(PORT, ()=>{
-    console.log('serv was started!')
-})
 
-
+// CRUD c - create, r - read, u - update, d - delete
