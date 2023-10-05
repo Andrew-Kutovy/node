@@ -50,8 +50,7 @@ app.post("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
+        const user = await User_model_1.User.findById(id);
         if (!user) {
             throw new Error("User not found");
         }

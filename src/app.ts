@@ -1,9 +1,21 @@
 import express, { Request, Response } from "express";
+
+
+
+
+
 import * as mongoose from "mongoose";
 
 import { configs } from "./configs/config";
 import * as fsService from "./fs.service";
 import { User } from "./models/User.model";
+
+
+
+
+
+
+
 import { IUser } from "./types/user.type";
 
 const app = express();
@@ -33,13 +45,20 @@ app.post("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
+        const user = await User.findById(id)
+
         if (!user) {
             throw new Error("User not found");
         }
         res.json(user);
+
+
+
     } catch (e) {
+
+
+
+
         res.status(404).json(e.message);
     }
 });
@@ -57,6 +76,10 @@ app.delete("/users/:id", async (req, res) => {
 
         await fsService.writer(users);
 
+
+
+
+
         res.sendStatus(204);
     } catch (e) {
         res.status(404).json(e.message);
@@ -69,8 +92,15 @@ app.put("/users/:id", async (req, res) => {
         const { name, email } = req.body;
 
         if (!name || name.length < 2) {
+
+
+
+
             throw new Error("Wrong name");
         }
+
+
+
         if (!email || !email.includes("@")) {
             throw new Error("Wrong email");
         }
