@@ -29,8 +29,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose = __importStar(require("mongoose"));
 const config_1 = require("./configs/config");
-const fsService = __importStar(require("./fs.service"));
 const User_model_1 = require("./models/User.model");
+const user_validator_1 = require("./validators/user.validator");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -38,13 +38,17 @@ app.get("/users", async (req, res) => {
     const users = await User_model_1.User.find();
     return res.json(users);
 });
-app.post("/users", async (req, res) => {
+app.post("/users", async (req, res, next) => {
     try {
-        const createdUser = await User_model_1.User.create({ ...req.body });
+        const { error, value } = user_validator_1.UserValidator.create.validate(req.body);
+        if (error) {
+            throw new Error(error.message);
+        }
+        const createdUser = await User_model_1.User.create(value);
         res.status(201).json(createdUser);
     }
     catch (e) {
-        res.status(400).json(e.message);
+        next();
     }
 });
 app.get("/users/:id", async (req, res) => {
@@ -63,13 +67,7 @@ app.get("/users/:id", async (req, res) => {
 app.delete("/users/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const users = await fsService.reader();
-        const index = users.findIndex((user) => user.id === Number(id));
-        if (index === -1) {
-            throw new Error("User not found");
-        }
-        users.splice(index, 1);
-        await fsService.writer(users);
+        await User_model_1.User.findByIdAndDelete(id);
         res.sendStatus(204);
     }
     catch (e) {
@@ -79,21 +77,9 @@ app.delete("/users/:id", async (req, res) => {
 app.put("/users/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email } = req.body;
-        if (!name || name.length < 2) {
-            throw new Error("Wrong name");
-        }
-        if (!email || !email.includes("@")) {
-            throw new Error("Wrong email");
-        }
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
-        if (!user) {
-            throw new Error("User not found");
-        }
-        user.email = email;
-        user.name = name;
-        await fsService.writer(users);
+        const user = await User_model_1.User.findByIdAndUpdate(id, req.body, {
+            returnDocument: "after",
+        });
         res.status(201).json(user);
     }
     catch (e) {

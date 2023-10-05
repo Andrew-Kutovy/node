@@ -1,22 +1,10 @@
-import express, { Request, Response } from "express";
-
-
-
-
-
+import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { configs } from "./configs/config";
-import * as fsService from "./fs.service";
 import { User } from "./models/User.model";
-
-
-
-
-
-
-
 import { IUser } from "./types/user.type";
+import { UserValidator } from "./validators/user.validator";
 
 const app = express();
 
@@ -24,109 +12,89 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get(
-    "/users",
-    async (req: Request, res: Response): Promise<Response<IUser[]>> => {
-        const users = await User.find();
+  "/users",
+  async (req: Request, res: Response): Promise<Response<IUser[]>> => {
+    const users = await User.find();
 
-        return res.json(users);
-    },
+    return res.json(users);
+  },
 );
 
 // Endpoint for creating user
-app.post("/users", async (req, res) => {
+app.post(
+  "/users",
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const createdUser = await User.create({ ...req.body });
-        res.status(201).json(createdUser);
+      const { error, value } = UserValidator.create.validate(req.body);
+      if (error) {
+        throw new Error(error.message);
+      }
+      const createdUser = await User.create(value);
+      res.status(201).json(createdUser);
     } catch (e) {
-        res.status(400).json(e.message);
+      next(e);
     }
-});
+  },
+);
 
-app.get("/users/:id", async (req, res) => {
+app.get(
+  "/users/:id",
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { id } = req.params;
-        const user = await User.findById(id)
+      const { id } = req.params;
+      const user = await User.findById(id);
 
-        if (!user) {
-            throw new Error("User not found");
-        }
-        res.json(user);
-
-
-
+      if (!user) {
+        throw new Error("User not found");
+      }
+      res.json(user);
     } catch (e) {
-
-
-
-
-        res.status(404).json(e.message);
+      next(e);
     }
-});
+  },
+);
 
-app.delete("/users/:id", async (req, res) => {
+app.delete(
+  "/users/:id",
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { id } = req.params;
+      const { id } = req.params;
 
-        const users = await fsService.reader();
-        const index = users.findIndex((user) => user.id === Number(id));
-        if (index === -1) {
-            throw new Error("User not found");
-        }
-        users.splice(index, 1);
+      await User.findByIdAndDelete(id);
 
-        await fsService.writer(users);
-
-
-
-
-
-        res.sendStatus(204);
+      res.sendStatus(204);
     } catch (e) {
-        res.status(404).json(e.message);
+      next(e);
     }
-});
+  },
+);
 
-app.put("/users/:id", async (req, res) => {
+app.put(
+  "/users/:id",
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { id } = req.params;
-        const { name, email } = req.body;
+      const { id } = req.params;
 
-        if (!name || name.length < 2) {
+      const user = await User.findByIdAndUpdate(id, req.body, {
+        returnDocument: "after",
+      });
 
-
-
-
-            throw new Error("Wrong name");
-        }
-
-
-
-        if (!email || !email.includes("@")) {
-            throw new Error("Wrong email");
-        }
-
-        const users = await fsService.reader();
-        const user = users.find((user) => user.id === Number(id));
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        user.email = email;
-        user.name = name;
-
-        await fsService.writer(users);
-
-        res.status(201).json(user);
+      res.status(201).json(user);
     } catch (e) {
-        res.status(404).json(e.message);
+      next(e);
     }
-});
+  },
+);
 
 const PORT = 5001;
 
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  res.json(err.message);
+});
+
 app.listen(PORT, async () => {
-    await mongoose.connect(configs.DB_URI);
-    console.log(`Server has successfully started on PORT ${PORT}`);
+  await mongoose.connect(configs.DB_URI);
+  console.log(`Server has successfully started on PORT ${PORT}`);
 });
 
 // CRUD c - create, r - read, u - update, d - delete
