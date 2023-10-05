@@ -29,64 +29,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose = __importStar(require("mongoose"));
 const config_1 = require("./configs/config");
-const User_model_1 = require("./models/User.model");
-const user_validator_1 = require("./validators/user.validator");
+const user_router_1 = require("./routers/user.router");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-app.get("/users", async (req, res) => {
-    const users = await User_model_1.User.find();
-    return res.json(users);
-});
-app.post("/users", async (req, res, next) => {
-    try {
-        const { error, value } = user_validator_1.UserValidator.create.validate(req.body);
-        if (error) {
-            throw new Error(error.message);
-        }
-        const createdUser = await User_model_1.User.create(value);
-        res.status(201).json(createdUser);
-    }
-    catch (e) {
-        next();
-    }
-});
-app.get("/users/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const user = await User_model_1.User.findById(id);
-        if (!user) {
-            throw new Error("User not found");
-        }
-        res.json(user);
-    }
-    catch (e) {
-        res.status(404).json(e.message);
-    }
-});
-app.delete("/users/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        await User_model_1.User.findByIdAndDelete(id);
-        res.sendStatus(204);
-    }
-    catch (e) {
-        res.status(404).json(e.message);
-    }
-});
-app.put("/users/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const user = await User_model_1.User.findByIdAndUpdate(id, req.body, {
-            returnDocument: "after",
-        });
-        res.status(201).json(user);
-    }
-    catch (e) {
-        res.status(404).json(e.message);
-    }
-});
+app.use("/users", user_router_1.userRouter);
 const PORT = 5001;
+app.use((err, req, res, next) => {
+    res.json(err.message);
+});
 app.listen(PORT, async () => {
     await mongoose.connect(config_1.configs.DB_URI);
     console.log(`Server has successfully started on PORT ${PORT}`);
