@@ -9,5 +9,13 @@ class UserRepository {
     async getById(id) {
         return await User_model_1.User.findById(id);
     }
+    async deleteById(id) {
+        return await User_model_1.User.findByIdAndDelete(id);
+    }
+    async updateById(id, user) {
+        return await User_model_1.User.findByIdAndUpdate(id, user, {
+            returnDocument: "after",
+        });
+    }
 }
 exports.userRepository = new UserRepository();

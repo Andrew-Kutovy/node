@@ -27,6 +27,7 @@ exports.userController = void 0;
 const mongoose = __importStar(require("mongoose"));
 const api_error_1 = require("../errors/api.error");
 const User_model_1 = require("../models/User.model");
+const user_repository_1 = require("../repositories/user.repository");
 const user_service_1 = require("../services/user.service");
 const user_validator_1 = require("../validators/user.validator");
 class UserController {
@@ -45,7 +46,7 @@ class UserController {
             if (!mongoose.isObjectIdOrHexString(id)) {
                 throw new api_error_1.ApiError("Not valid ID", 400);
             }
-            const user = req.res.locals;
+            const user = await user_repository_1.userRepository.getById(id);
             res.json(user);
         }
         catch (e) {
@@ -65,28 +66,24 @@ class UserController {
             next(e);
         }
     }
-    async delete(req, res, next) {
+    async deleteById(req, res, next) {
         try {
             const { id } = req.params;
-            if (!mongoose.isObjectIdOrHexString(id)) {
-                throw new api_error_1.ApiError("Not valid ID", 400);
-            }
-            await User_model_1.User.findByIdAndDelete(id);
+            await user_service_1.userService.deleteById(id);
             res.sendStatus(204);
         }
         catch (e) {
             next(e);
         }
     }
-    async update(req, res, next) {
+    async updateById(req, res, next) {
         try {
             const { id } = req.params;
             if (!mongoose.isObjectIdOrHexString(id)) {
                 throw new api_error_1.ApiError("Not valid ID", 400);
             }
-            const user = await User_model_1.User.findByIdAndUpdate(id, req.body, {
-                returnDocument: "after",
-            });
+            const body = req.body;
+            const user = await user_service_1.userService.updateById(id, body);
             if (!user) {
                 throw new api_error_1.ApiError("user not found", 404);
             }

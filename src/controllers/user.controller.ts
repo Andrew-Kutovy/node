@@ -3,6 +3,7 @@ import * as mongoose from "mongoose";
 
 import { ApiError } from "../errors/api.error";
 import { User } from "../models/User.model";
+import { userRepository } from "../repositories/user.repository";
 import { userService } from "../services/user.service";
 import { IUser } from "../types/user.type";
 import { UserValidator } from "../validators/user.validator";
@@ -32,7 +33,7 @@ class UserController {
       if (!mongoose.isObjectIdOrHexString(id)) {
         throw new ApiError("Not valid ID", 400);
       }
-      const user = req.res.locals;
+      const user = await userRepository.getById(id);
 
       res.json(user);
     } catch (e) {
@@ -57,25 +58,22 @@ class UserController {
     }
   }
 
-  public async delete(
+  public async deleteById(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
       const { id } = req.params;
-      if (!mongoose.isObjectIdOrHexString(id)) {
-        throw new ApiError("Not valid ID", 400);
-      }
 
-      await User.findByIdAndDelete(id);
+      await userService.deleteById(id);
 
       res.sendStatus(204);
     } catch (e) {
       next(e);
     }
   }
-  public async update(
+  public async updateById(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -85,9 +83,8 @@ class UserController {
       if (!mongoose.isObjectIdOrHexString(id)) {
         throw new ApiError("Not valid ID", 400);
       }
-      const user = await User.findByIdAndUpdate(id, req.body, {
-        returnDocument: "after",
-      });
+      const body = req.body;
+      const user = await userService.updateById(id, body);
       if (!user) {
         throw new ApiError("user not found", 404);
       }
