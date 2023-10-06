@@ -36,7 +36,8 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use("/users", user_router_1.userRouter);
 const PORT = 5001;
 app.use((err, req, res, next) => {
-    res.json(err.message);
+    const status = err.status || 500;
+    res.status(status).json(err.message);
 });
 app.listen(PORT, async () => {
     await mongoose.connect(config_1.configs.DB_URI);

@@ -14,7 +14,8 @@ app.use("/users", userRouter);
 const PORT = 5001;
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  res.json(err.message);
+  const status = err.status || 500
+  res.status(status).json(err.message);
 });
 
 app.listen(PORT, async () => {
