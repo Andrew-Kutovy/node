@@ -5,10 +5,10 @@ import mongoose from "mongoose";
 import { ApiError } from "../errors/api.error";
 
 class CommonMiddleware {
-  public async isIdValid(field: string) {
+  public async isIdValid(id: string) {
     return (req: Request, res: Response, next: NextFunction) => {
       try {
-        const id = req.params[field];
+        const {id} = req.params;
 
         if (!mongoose.isObjectIdOrHexString(id)) {
           throw new ApiError("ID is not valid", 400);

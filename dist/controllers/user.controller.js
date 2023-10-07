@@ -79,14 +79,8 @@ class UserController {
     async updateById(req, res, next) {
         try {
             const { id } = req.params;
-            if (!mongoose.isObjectIdOrHexString(id)) {
-                throw new api_error_1.ApiError("Not valid ID", 400);
-            }
             const body = req.body;
             const user = await user_service_1.userService.updateById(id, body);
-            if (!user) {
-                throw new api_error_1.ApiError("user not found", 404);
-            }
             res.status(201).json(user);
         }
         catch (e) {

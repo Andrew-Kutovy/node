@@ -14,5 +14,9 @@ router.post(
 );
 router.get("/:id", userController.getById);
 router.delete("/:id", userController.deleteById);
-router.put("/:id", userController.updateById);
+router.put(
+    "/:id",
+    //commonMiddleware.isIdValid('id'),
+    commonMiddleware.isBodyValid(UserValidator.update),
+    userController.updateById);
 export const userRouter = router;

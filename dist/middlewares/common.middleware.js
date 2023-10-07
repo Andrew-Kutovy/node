@@ -7,10 +7,10 @@ exports.commonMiddleware = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const api_error_1 = require("../errors/api.error");
 class CommonMiddleware {
-    async isIdValid(field) {
+    async isIdValid(id) {
         return (req, res, next) => {
             try {
-                const id = req.params[field];
+                const { id } = req.params;
                 if (!mongoose_1.default.isObjectIdOrHexString(id)) {
                     throw new api_error_1.ApiError("ID is not valid", 400);
                 }

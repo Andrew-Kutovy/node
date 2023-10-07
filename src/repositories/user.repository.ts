@@ -11,7 +11,7 @@ class UserRepository {
   public async deleteById(id: string): Promise<IUser> {
     return await User.findByIdAndDelete(id);
   }
-  public async updateById(id: string, user: IUser): Promise<IUser> {
+  public async updateById(id: string, user: Partial<IUser>): Promise<IUser> {
     return await User.findByIdAndUpdate(id, user, {
       returnDocument: "after",
     });

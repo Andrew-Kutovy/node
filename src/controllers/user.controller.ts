@@ -80,14 +80,8 @@ class UserController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      if (!mongoose.isObjectIdOrHexString(id)) {
-        throw new ApiError("Not valid ID", 400);
-      }
       const body = req.body;
       const user = await userService.updateById(id, body);
-      if (!user) {
-        throw new ApiError("user not found", 404);
-      }
 
       res.status(201).json(user);
     } catch (e) {
