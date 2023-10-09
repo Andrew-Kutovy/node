@@ -1,9 +1,14 @@
+import { FilterQuery } from "mongoose";
+
 import { User } from "../models/User.model";
-import { IUser } from "../types/user.type";
+import { IUser, IUserCredentials } from "../types/user.type";
 
 class UserRepository {
   public async getAll(): Promise<IUser[]> {
     return await User.find();
+  }
+  public async getOneByParams(params: FilterQuery<IUser>): Promise<IUser> {
+    return await User.findOne(params);
   }
   public async getById(id: string): Promise<IUser> {
     return await User.findById(id);
@@ -16,9 +21,9 @@ class UserRepository {
       returnDocument: "after",
     });
   }
-  // public async create(value: IUser): Promise<IUser> {
-  //   return await User.create(value);
-  // }
+  public async register(dto: IUserCredentials): Promise<IUser> {
+    return await User.create({ ...dto });
+  }
 }
 
 export const userRepository = new UserRepository();

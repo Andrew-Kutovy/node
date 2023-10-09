@@ -15,18 +15,14 @@ _a = UserValidator;
 UserValidator.firstName = joi_1.default.string().min(2).max(50).trim();
 UserValidator.age = joi_1.default.number().min(4).max(150);
 UserValidator.genders = joi_1.default.valid(...Object.values(gender_enum_1.EGenders));
-UserValidator.email = joi_1.default.string().regex(regex_constants_1.regexConstants.EMAIL).trim().required();
-UserValidator.password = joi_1.default
-    .string()
-    .regex(regex_constants_1.regexConstants.PASSWORD)
-    .trim()
-    .required();
+UserValidator.email = joi_1.default.string().regex(regex_constants_1.regexConstants.EMAIL).trim();
+UserValidator.password = joi_1.default.string().regex(regex_constants_1.regexConstants.PASSWORD).trim();
 UserValidator.create = joi_1.default.object({
     name: _a.firstName,
     age: _a.age,
     genders: _a.genders,
-    email: _a.email,
-    password: _a.password,
+    email: _a.email.required(),
+    password: _a.password.required(),
 });
 UserValidator.update = joi_1.default.object({
     name: _a.firstName,
@@ -34,4 +30,8 @@ UserValidator.update = joi_1.default.object({
     genders: _a.genders,
     email: _a.email,
     password: _a.password,
+});
+UserValidator.register = joi_1.default.object({
+    email: _a.email.required(),
+    password: _a.password.required(),
 });

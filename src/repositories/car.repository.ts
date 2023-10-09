@@ -5,7 +5,7 @@ class CarRepository {
   public async getAll(): Promise<ICar[]> {
     return await Car.find();
   }
-  public async create(car: ICar): Promise<any> {
+  public async create(car: ICar): Promise<ICar> {
     return await Car.create(car);
   }
   public async getById(id: string): Promise<ICar> {

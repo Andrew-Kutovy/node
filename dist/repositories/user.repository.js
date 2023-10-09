@@ -6,6 +6,9 @@ class UserRepository {
     async getAll() {
         return await User_model_1.User.find();
     }
+    async getOneByParams(params) {
+        return await User_model_1.User.findOne(params);
+    }
     async getById(id) {
         return await User_model_1.User.findById(id);
     }
@@ -16,6 +19,9 @@ class UserRepository {
         return await User_model_1.User.findByIdAndUpdate(id, user, {
             returnDocument: "after",
         });
+    }
+    async register(dto) {
+        return await User_model_1.User.create({ ...dto });
     }
 }
 exports.userRepository = new UserRepository();

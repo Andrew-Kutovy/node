@@ -1,5 +1,7 @@
 import { model, Schema } from "mongoose";
 
+import { ICar } from "../types/car.type";
+
 const carSchema = new Schema(
   {
     model: {
@@ -27,4 +29,4 @@ const carSchema = new Schema(
   },
 );
 
-export const Car = model("/cars", carSchema);
+export const Car = model<ICar>("/cars", carSchema);

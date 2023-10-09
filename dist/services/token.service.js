@@ -22,28 +22,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const mongoose = __importStar(require("mongoose"));
-const config_1 = require("./configs/config");
-const auth_router_1 = require("./routers/auth.router");
-const car_router_1 = require("./routers/car.router");
-const user_router_1 = require("./routers/user.router");
-const app = (0, express_1.default)();
-app.use(express_1.default.json());
-app.use(express_1.default.urlencoded({ extended: true }));
-app.use("/users", user_router_1.userRouter);
-app.use("/auth", auth_router_1.authRouter);
-app.use("/cars", car_router_1.carRouter);
-const PORT = 5001;
-app.use((err, req, res, next) => {
-    const status = err.status || 500;
-    res.status(status).json(err.message);
-});
-app.listen(PORT, async () => {
-    await mongoose.connect(config_1.configs.DB_URI);
-    console.log(`Server has successfully started on PORT ${PORT}`);
-});
+exports.tokenService = void 0;
+const jwt = __importStar(require("jsonwebtoken"));
+const config_1 = require("../configs/config");
+class TokenService {
+    generateTokenPair(payload) {
+        const accessToken = jwt.sign(payload, config_1.configs.JWT_ACCESS_SECRET, {
+            expiresIn: "4h",
+        });
+        const refreshToken = jwt.sign(payload, config_1.configs.JWT_REFRESH_SECRET, {
+            expiresIn: "30d",
+        });
+        return {
+            accessToken,
+            refreshToken,
+        };
+    }
+}
+exports.tokenService = new TokenService();
