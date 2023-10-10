@@ -11,11 +11,15 @@ class AuthController {
     res: Response,
     next: NextFunction,
   ): Promise<Response<IMessage>> {
-    await authService.register(req.body);
+    try {
+      await authService.register(req.body);
 
-    return res.status(201).json({
-      message: "User created",
-    });
+      return res.status(201).json({
+        message: "User created",
+      });
+    } catch (e) {
+      next(e);
+    }
   }
 }
 
