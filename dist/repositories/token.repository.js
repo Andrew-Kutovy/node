@@ -6,6 +6,12 @@ class TokenRepository {
     async create(dto) {
         return await Token_model_1.Token.create(dto);
     }
+    async findOne(params) {
+        return await Token_model_1.Token.findOne(params);
+    }
+    async deleteOne(params) {
+        await Token_model_1.Token.deleteOne(params);
+    }
 }
 exports.TokenRepository = TokenRepository;
 exports.tokenRepository = new TokenRepository();

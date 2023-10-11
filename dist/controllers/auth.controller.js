@@ -21,5 +21,16 @@ class AuthController {
             next(e);
         }
     }
+    async refresh(req, res, next) {
+        try {
+            const tokenPayload = req.res.locals.tokenPayload;
+            const refreshToken = req.res.locals.refreshToken;
+            const tokensPair = await auth_service_1.authService.refresh(tokenPayload, refreshToken);
+            return res.status(201).json(tokensPair);
+        }
+        catch (e) {
+            next(e);
+        }
+    }
 }
 exports.authController = new AuthController();

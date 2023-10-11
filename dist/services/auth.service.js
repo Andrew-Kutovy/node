@@ -37,5 +37,24 @@ class AuthService {
             throw new api_error_1.ApiError(e.message, e.status);
         }
     }
+    async refresh(payload, refreshToken) {
+        try {
+            const tokensPair = token_service_1.tokenService.generateTokenPair(payload);
+            await Promise.all([
+                await token_repository_1.tokenRepository.create({
+                    ...tokensPair,
+                    _userId: payload.userId,
+                }),
+                await token_repository_1.tokenRepository.deleteOne({
+                    userId: payload.userId,
+                    name: payload.name,
+                }),
+            ]);
+            return tokensPair;
+        }
+        catch (e) {
+            throw new api_error_1.ApiError(e.message, e.status);
+        }
+    }
 }
 exports.authService = new AuthService();

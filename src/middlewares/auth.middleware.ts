@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 
 import { ApiError } from "../errors/api.error";
-import { userRepository } from "../repositories/user.repository";
+import { tokenRepository } from "../repositories/token.repository";
+import { tokenService } from "../services/token.service";
 
 class AuthMiddleware {
   public async checkRefreshToken(
@@ -10,12 +11,44 @@ class AuthMiddleware {
     next: NextFunction,
   ) {
     try {
-      const { email } = req.body;
-      const user = await userRepository.getOneByParams(email);
+      const refreshToken = req.get("Authorization");
 
-      if (!user) {
-        throw new ApiError("Email already exist", 409);
+      if (!refreshToken) {
+        throw new ApiError("No token", 401);
       }
+
+      const payload = tokenService.checkToken(refreshToken, "refresh");
+      const entity = await tokenRepository.findOne({ refreshToken });
+      if (!entity) {
+        throw new ApiError("Token not valid", 401);
+      }
+      req.res.locals.tokenPayload = payload;
+      req.res.locals.refreshToken = refreshToken;
+
+      next();
+    } catch (e) {
+      next(e);
+    }
+  }
+  public async checkAccessToken(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const accessToken = req.get("Authorization");
+
+      if (!accessToken) {
+        throw new ApiError("No token", 401);
+      }
+
+      const payload = tokenService.checkToken(accessToken, "access");
+      const entity = await tokenRepository.findOne({ accessToken });
+      if (!entity) {
+        throw new ApiError("Token not valid", 401);
+      }
+      req.res.locals.tokenPayload = payload;
+      req.res.locals.accessToken = accessToken;
 
       next();
     } catch (e) {

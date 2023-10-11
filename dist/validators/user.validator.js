@@ -32,6 +32,9 @@ UserValidator.update = joi_1.default.object({
     password: _a.password,
 });
 UserValidator.register = joi_1.default.object({
+    name: _a.firstName,
+    age: _a.age,
+    genders: _a.genders,
     email: _a.email.required(),
     password: _a.password.required(),
 });
